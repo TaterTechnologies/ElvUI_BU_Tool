@@ -219,6 +219,8 @@ namespace ElvUI_profile_backup
                 }
 
                 MessageBox.Show("Backup completed successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                DeleteOlderBackups(backupDirectory, 60);
             }
             catch (Exception ex)
             {
@@ -226,6 +228,26 @@ namespace ElvUI_profile_backup
             }
         }
 
+        private void DeleteOlderBackups(string directoryPath, int maxBackupCount)
+        {
+            try
+            {
+                var backupFiles = Directory.GetFiles(directoryPath, "RestoreBackup_*.zip")
+                                             .OrderByDescending(file => File.GetLastWriteTime(file))
+                                             .ToList();
+
+                while (backupFiles.Count > maxBackupCount)
+                {
+                    var fileToDelete = backupFiles.Last();
+                    File.Delete(fileToDelete);
+                    backupFiles.Remove(fileToDelete);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to delete older backups: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
         private void Auto_Backup_Click(object sender, EventArgs e)
         {
             if (!checkBox1.Checked && !checkBox2.Checked && !checkBox3.Checked)
